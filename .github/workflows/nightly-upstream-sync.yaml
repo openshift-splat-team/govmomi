@@ -1,0 +1,50 @@
+name: Nightly Upstream Sync
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nightly-upstream-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Merge upstream/main into origin/main
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout origin main
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Configure merge identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Fetch upstream main
+        run: |
+          git remote add upstream https://github.com/vmware/govmomi.git
+          git fetch upstream main:refs/remotes/upstream/main
+
+      - name: Merge and push upstream changes
+        run: |
+          set -euo pipefail
+
+          git fetch origin main
+          git merge --ff-only origin/main
+
+          if git merge-base --is-ancestor upstream/main HEAD; then
+            echo "origin/main already contains upstream/main"
+            exit 0
+          fi
+
+          git merge --no-edit upstream/main
+          git push origin HEAD:main

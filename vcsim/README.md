@@ -10,6 +10,13 @@ language, it can be used by any language that can talk to the vSphere API.
 
 The official `vcsim` [Docker images](https://hub.docker.com/r/vmware/vcsim) are built from this [Dockerfile](../Dockerfile.vcsim).
 
+To build a minimal image from source, run this from the repository root:
+
+```bash
+docker build -f vcsim/Dockerfile -t vcsim .
+docker run --rm -p 8989:8989 vcsim
+```
+
 ### Binaries
 You can find prebuilt `vcsim` binaries on the [releases page](https://github.com/vmware/govmomi/releases).
 
@@ -93,11 +100,13 @@ Usage of vcsim:
   -E string
         Output vcsim variables to the given fifo or stdout (default "-")
   -api-version string
-        API version (default "6.5")
+        Override server API version (default is inferred from -version)
   -app int
         Number of virtual apps per compute resource
   -autostart
         Autostart model created VMs (default true)
+  -build string
+        Build number reported by the server (default is inferred for known versions)
   -cluster int
         Number of clusters (default 1)
   -dc int
@@ -114,6 +123,8 @@ Usage of vcsim:
         Number of folders
   -host int
         Number of hosts per cluster (default 3)
+  -host-build string
+        ESXi build number reported by hosts (default is inferred from -version)
   -l string
         Listen address for vcsim (default "127.0.0.1:8989")
   -load string
@@ -140,6 +151,8 @@ Usage of vcsim:
         Enable TLS (default true)
   -tlscert string
         Path to TLS certificate file
+  -tlscertout string
+        Write the TLS certificate to this file (default "/tmp/vcsim.crt")
   -tlskey string
         Path to TLS key file
   -trace
@@ -152,7 +165,13 @@ Usage of vcsim:
         Login username for vcsim (any username allowed by default)
   -vm int
         Number of virtual machines per resource pool (default 2)
+  -version string
+        Product version reported by the server and hosts (default "6.5.0")
 ```
+
+When `-version` is specified, vcsim uses it for both the server and ESXi hosts,
+and infers their API versions and known build numbers. Use `-api-version`,
+`-build`, and `-host-build` to override the inferred values.
 
 [model]:https://godoc.org/github.com/vmware/govmomi/simulator#Model
 
